@@ -1,138 +1,3 @@
-/* ── 다이어리 표지 인트로 ─────────────────────── */
-.intro {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: grid;
-  place-items: center;
-  background: var(--desk);
-  perspective: 1800px;
-  gap: 0.9rem;
-  align-content: center;
-  justify-items: center;
-}
-.intro.is-opening {
-  animation: intro-out 0.5s ease-in 1s forwards;
-}
-.intro-book {
-  position: relative;
-  width: min(320px, 70vw);
-  aspect-ratio: 3 / 4;
-  max-width: 100%;
-  transform-style: preserve-3d;
-  animation: book-in 0.5s ease-out both;
-  cursor: pointer;
-}
-.intro-pages {
-  position: absolute;
-  inset: 5px 0 5px 4px;
-  background: var(--paper-card);
-  border-radius: 3px 10px 10px 3px;
-  box-shadow: 3px 0 0 -1px var(--edge), 6px 0 0 -2px var(--edge);
-  padding: 18% 12%;
-}
-.intro-pages span {
-  display: block;
-  height: 100%;
-  background-image: repeating-linear-gradient(to bottom, transparent 0 21px, var(--rule) 21px 22px);
-}
-.intro-cover {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: var(--cover);
-  border-radius: 5px 12px 12px 5px;
-  transform-origin: left center;
-  backface-visibility: hidden;
-  box-shadow: 0 24px 40px -20px rgba(0, 0, 0, 0.55), inset 10px 0 0 rgba(0, 0, 0, 0.18);
-}
-.intro.is-opening .intro-cover {
-  animation: cover-open 1.05s cubic-bezier(0.6, 0.05, 0.3, 1) forwards;
-}
-.intro-stitch {
-  position: absolute;
-  top: 4%;
-  bottom: 4%;
-  left: 7%;
-  border-left: 2px dashed var(--cover-ink);
-  opacity: 0.35;
-}
-.intro-title {
-  width: 100%;
-  min-width: 0;
-  text-align: center;
-  background: transparent;
-  border: 0;
-  border-bottom: 2px dashed transparent;
-  outline: none;
-  color: inherit;
-  font: 400 2.6rem/1.1 var(--font-title);
-}
-.intro-title:hover,
-.intro-title:focus {
-  border-bottom-color: currentColor;
-}
-.intro-deco {
-  position: absolute;
-  bottom: 9%;
-  color: var(--cover-ink);
-  opacity: 0.55;
-  letter-spacing: 0.4em;
-  font-size: 0.8rem;
-}
-.intro-band {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 13%;
-  width: 9px;
-  background: var(--pen-red);
-}
-.intro-label {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  gap: 0.1rem;
-  width: 78%;
-  padding: 0.6rem 1rem 0.8rem;
-  background: var(--cover-ink);
-  color: var(--cover);
-  border-radius: 6px;
-  font-family: var(--font-title);
-}
-.intro-label span {
-  font-size: 1.1rem;
-  letter-spacing: 0.15em;
-}
-.intro-label b {
-  font-weight: 400;
-  font-size: 2.6rem;
-  line-height: 1;
-}
-.intro-skip {
-  margin: 0.4rem 0 0;
-  font-size: 0.9rem;
-  color: var(--ink-soft);
-}
-@keyframes book-in {
-  from {
-    opacity: 0;
-    transform: translateY(14px) scale(0.96);
-  }
-}
-@keyframes cover-open {
-  to {
-    transform: rotateY(-165deg);
-  }
-}
-@keyframes intro-out {
-  to {
-    opacity: 0;
-    transform: scale(1.35);
-    visibility: hidden;
-  }
-}
 
 /* ── 머리말 ─────────────────────────────── */
 .app-header {
@@ -1337,21 +1202,6 @@
   font-size: 1.1rem;
 }
 
-/* ── 표지 꾸미기 ─────────────────────────── */
-.intro-cover {
-  background-color: var(--cover);
-  background-image: linear-gradient(115deg, rgba(255, 255, 255, 0.2), transparent 38%, rgba(0, 0, 0, 0.14)),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.045) 0 2px, transparent 2px 5px);
-}
-.intro-band {
-  background: var(--cover-accent, var(--pen-red));
-  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.18);
-}
-.intro-label {
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
-  outline: 1.5px dashed color-mix(in srgb, var(--cover) 45%, transparent);
-  outline-offset: -5px;
-}
 .cover-swatches {
   display: flex;
   gap: 0.6rem;
@@ -1691,26 +1541,187 @@ button.brand {
   }
 }
 
-/* ── Scrawl 브랜드 (시작 화면) ─────────────────── */
+/* ── 시작 화면: 모던 표지 카드 ─────────────────── */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  justify-items: center;
+  gap: 1.1rem;
+  padding: 1rem;
+  background:
+    radial-gradient(900px 500px at 50% -10%, color-mix(in srgb, var(--cover) 18%, transparent), transparent 70%),
+    var(--desk);
+}
+.intro.is-opening {
+  animation: intro-out 0.5s ease-in 0.25s forwards;
+}
+.intro-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: min(340px, 82vw);
+  aspect-ratio: 4 / 5;
+  padding: 1.7rem 1.6rem 1.5rem;
+  color: var(--cover-ink);
+  background:
+    radial-gradient(120% 70% at 100% 0%, rgba(255, 255, 255, 0.16), transparent 60%),
+    var(--cover);
+  border-radius: 22px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 30px 50px -28px rgba(0, 0, 0, 0.55), 0 8px 18px -10px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  animation: card-in 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --mark-bg: var(--cover-ink);
+  --mark-fg: var(--cover);
+}
+.intro-card:focus-visible {
+  outline: 3px solid var(--cover-ink);
+  outline-offset: 4px;
+}
+.intro.is-opening .intro-card {
+  animation: card-open 0.6s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+}
+.intro-card::after {
+  content: '';
+  position: absolute;
+  left: 1.6rem;
+  right: 1.6rem;
+  bottom: 4.4rem;
+  height: 1px;
+  background: var(--cover-ink);
+  opacity: 0.25;
+}
+.intro-mid {
+  display: grid;
+  gap: 0.35rem;
+}
+.intro-year {
+  font: 700 0.78rem/1 system-ui, sans-serif;
+  letter-spacing: 0.3em;
+  opacity: 0.7;
+}
+.intro-title {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px dashed transparent;
+  outline: none;
+  color: inherit;
+  font: 400 3rem/1.1 var(--font-title);
+}
+.intro-title::placeholder {
+  color: inherit;
+  opacity: 0.5;
+}
+.intro-title:hover,
+.intro-title:focus {
+  border-bottom-color: color-mix(in srgb, var(--cover-ink) 60%, transparent);
+}
+.intro-go {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font: 700 0.9rem/1 system-ui, sans-serif;
+  letter-spacing: 0.04em;
+}
+.intro-go i {
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 50%;
+  background: var(--cover-ink);
+  color: var(--cover);
+  font-style: normal;
+  transition: transform 0.2s;
+}
+.intro-card:hover .intro-go i {
+  transform: translateX(4px);
+}
+.intro-skip {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
 .scrawl-brand {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  animation: book-in 0.5s ease-out both;
+  gap: 0.65rem;
 }
 .scrawl-text {
   display: grid;
   line-height: 1;
 }
 .scrawl-text b {
-  font: 700 1.9rem/1 var(--font-hand);
+  font: 700 1.6rem/1 var(--font-hand);
   letter-spacing: 0.02em;
-  color: var(--ink);
 }
 .scrawl-text span {
-  margin-top: 0.25rem;
-  font: 700 0.7rem/1 system-ui, sans-serif;
-  letter-spacing: 0.28em;
+  margin-top: 0.28rem;
+  font: 700 0.62rem/1 system-ui, sans-serif;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--ink-soft);
+  opacity: 0.7;
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+}
+@keyframes card-open {
+  to {
+    opacity: 0;
+    transform: translateY(-24px) scale(1.06);
+  }
+}
+@keyframes intro-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-card,
+  .intro.is-opening,
+  .intro.is-opening .intro-card {
+    animation: none;
+  }
+}
+
+/* ── 포스트잇 메모 (일기와 구분) ─────────────── */
+.memo.sticky {
+  width: 100%;
+  resize: none;
+  padding: 0.6rem 0.8rem;
+  background: #fff3a8;
+  color: #3a3410;
+  border: 0;
+  border-radius: 3px 3px 12px 3px;
+  box-shadow: 0 6px 10px -6px rgba(0, 0, 0, 0.35);
+  transform: rotate(-0.6deg);
+  line-height: 1.5;
+}
+.memo.sticky::placeholder {
+  color: #3a3410;
+  opacity: 0.45;
+}
+.nb-sticky {
+  display: inline-block;
+  padding: 0.25rem 0.7rem;
+  background: #fff3a8;
+  color: #3a3410;
+  border-left: 0;
+  border-radius: 3px;
+}
+.note-label small {
+  margin-left: 0.5rem;
+  font-weight: 400;
+  font-size: 0.8em;
 }

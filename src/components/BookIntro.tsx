@@ -13,7 +13,7 @@ function alreadyOpened() {
   }
 }
 
-/** 앱을 켜면 노트 표지가 나온다. 제목을 고칠 수 있고, 노트를 누르면 표지가 넘어가며 안으로 들어간다. */
+/** 앱을 켜면 표지 카드가 나온다. 제목을 고칠 수 있고, 카드를 누르면 위로 사라지며 안으로 들어간다. */
 export function BookIntro() {
   const [phase, setPhase] = useState<'closed' | 'opening' | 'gone'>(() => (alreadyOpened() ? 'gone' : 'closed'));
   const title = usePlanner((s) => s.notebookTitle);
@@ -39,7 +39,7 @@ export function BookIntro() {
     }
     if (phase !== 'opening') return;
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const t = window.setTimeout(() => setPhase('gone'), reduce ? 0 : 1500);
+    const t = window.setTimeout(() => setPhase('gone'), reduce ? 0 : 850);
     return () => window.clearTimeout(t);
   }, [phase]);
 
@@ -51,43 +51,39 @@ export function BookIntro() {
     <div
       className={`intro${phase === 'opening' ? ' is-opening' : ''}`}
       role="dialog"
-      aria-label="노트 표지"
+      aria-label="시작 화면"
       style={{ '--cover': cover.bg, '--cover-ink': cover.ink, '--cover-accent': cover.accent } as CSSProperties}
     >
-      <ScrawlBrand />
       <div
-        className="intro-book"
+        className="intro-card"
         onClick={open}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) open();
         }}
-        aria-label="노트 열기"
+        aria-label="플래너 열기"
       >
-        <div className="intro-pages" aria-hidden="true">
-          <span />
+        <ScrawlBrand />
+        <div className="intro-mid">
+          <span className="intro-year">{year}</span>
+          <input
+            className="intro-title"
+            value={title}
+            maxLength={24}
+            placeholder="나의 플래너"
+            aria-label="플래너 제목"
+            onChange={(e) => setTitle(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+              if (e.key === 'Enter') open();
+            }}
+          />
         </div>
-        <div className="intro-cover">
-          <div className="intro-stitch" aria-hidden="true" />
-          <div className="intro-band" aria-hidden="true" />
-          <div className="intro-label">
-            <span>{year}</span>
-            <input
-              className="intro-title"
-              value={title}
-              maxLength={24}
-              placeholder="나의 노트"
-              aria-label="노트 제목"
-              onChange={(e) => setTitle(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => {
-                e.stopPropagation();
-                if (e.key === 'Enter') open();
-              }}
-            />
-          </div>
-          <div className="intro-deco" aria-hidden="true">✦ ✦ ✦</div>
+        <div className="intro-go">
+          <span>시작하기</span>
+          <i aria-hidden="true">→</i>
         </div>
       </div>
       <div className="cover-swatches" role="radiogroup" aria-label="표지 색">
@@ -105,8 +101,7 @@ export function BookIntro() {
           />
         ))}
       </div>
-      <p className="intro-skip">제목을 눌러 바꾸고, 노트를 눌러 열어요</p>
-      <button type="button" className="btn btn-ink intro-open" onClick={open}>노트 열기</button>
+      <p className="intro-skip">제목을 눌러 바꾸고, 카드를 눌러 시작해요</p>
     </div>
   );
 }

@@ -28,7 +28,7 @@ function DayPage({ entry, no }: { entry: NoteEntry; no: number }) {
       </header>
       {entry.main && <p className="bk-main"><span className="hl">{entry.main}</span></p>}
       {entry.diary && <p className="bk-diary">{entry.diary}</p>}
-      {entry.memo && <p className="bk-memo">{entry.memo}</p>}
+      {entry.memo && <p className="bk-memo">📌 {entry.memo}</p>}
       {entry.done.length > 0 && (
         <ul className="bk-done">
           {entry.done.map((t) => <li key={t.id}>{t.title}</li>)}

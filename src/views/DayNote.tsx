@@ -66,6 +66,19 @@ function DayPage({ date }: { date: string }) {
         </section>
 
         <section className="note-section">
+          <h2 className="note-label">📌 포스트잇 <small className="muted">잊지 말 것 한두 줄</small></h2>
+          <textarea
+            className="memo sticky"
+            rows={2}
+            maxLength={120}
+            value={entry.memo}
+            onChange={(e) => setMemo(date, e.target.value)}
+            placeholder="예: 3시 택배, 우유 사기"
+            aria-label="포스트잇 메모"
+          />
+        </section>
+
+        <section className="note-section">
           <h2 className="note-label">
             할 일 <span className="muted">{doneCount}/{open.length}</span>
           </h2>
@@ -105,7 +118,7 @@ function DayPage({ date }: { date: string }) {
         )}
 
         <section className="note-section diary-section">
-          <h2 className="note-label">오늘의 일기</h2>
+          <h2 className="note-label">오늘의 일기 <small className="muted">하루를 돌아보는 긴 글</small></h2>
           <div className="mood-row" role="radiogroup" aria-label="오늘의 기분">
             {MOODS.map((m) => (
               <button
@@ -127,17 +140,6 @@ function DayPage({ date }: { date: string }) {
             value={entry.diary ?? ''}
             onChange={(e) => setDiary(date, e.target.value)}
             placeholder="오늘은 어땠나요? 있었던 일, 느낀 점을 편하게 적어 보세요."
-          />
-        </section>
-
-        <section className="note-section">
-          <h2 className="note-label">메모</h2>
-          <textarea
-            className="memo lined"
-            rows={3}
-            value={entry.memo}
-            onChange={(e) => setMemo(date, e.target.value)}
-            placeholder="짧은 메모, 기억할 것"
           />
         </section>
       </article>

@@ -59,7 +59,7 @@ export default function Notebook() {
                   </header>
                   {main && <Highlight className="nb-main">{main}</Highlight>}
                   {diary && <p className="nb-memo">{diary}</p>}
-                  {memo && <p className="nb-memo">{memo}</p>}
+                  {memo && <p className="nb-memo nb-sticky">📌 {memo}</p>}
                   {done.length > 0 && (
                     <ul className="nb-done">
                       {done.map((t) => <li key={t.id}>{t.title}</li>)}
