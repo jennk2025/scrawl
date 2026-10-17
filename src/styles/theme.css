@@ -1,0 +1,85 @@
+/* 깔끔한 노트 한 권: 흰 종이 + 진한 잉크 + 포인트는 빨간 펜 하나 */
+:root {
+  --font-hand: 'Gaegu', 'Nanum Pen Script', cursive;
+  --font-title: 'Nanum Pen Script', 'Gaegu', cursive;
+
+  --desk: #e9e4da;        /* 노트가 놓인 책상 */
+  --paper: #f7f4ee;       /* 화면 바탕 */
+  --paper-card: #ffffff;  /* 노트 종이 */
+  --paper-2: #f1ede4;     /* 살짝 눌린 칸 */
+  --edge: #ddd6c8;        /* 종이 테두리 */
+  --ink: #1c1a21;
+  --ink-soft: #5b5664;
+  --rule: #d6dce5;
+  --pen-red: #cf3a2f;
+  --pen-blue: #2b4f9e;
+  --hl: #ffe27a;
+  --hl-alpha: 1;
+  --on-pastel: #1c1a21;
+  --cover: #24324f;       /* 다이어리 표지 */
+  --cover-ink: #f3ead4;
+  --shadow: 0 1px 2px rgba(40, 30, 20, 0.06);
+  --line: 34px;
+
+  --heat-0: #ebe6db;
+  --heat-1: #cfe5bd;
+  --heat-2: #9fd182;
+  --heat-3: #63ad4c;
+  --heat-4: #357f2c;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --desk: #121417;
+    --paper: #181b1f;
+    --paper-card: #22262b;
+    --paper-2: #2b3036;
+    --edge: #383e46;
+    --ink: #f1ece2;
+    --ink-soft: #b0aa9f;
+    --rule: #3a414a;
+    --pen-red: #ff7d6e;
+    --pen-blue: #93b2f2;
+    --hl: #ffe27a;
+    --hl-alpha: 0.38;
+    --cover: #2e3f63;
+    --cover-ink: #f3ead4;
+    --shadow: none;
+    --heat-0: #2c3137;
+    --heat-1: #30503a;
+    --heat-2: #3b7745;
+    --heat-3: #55a45a;
+    --heat-4: #82d178;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --desk: #121417;
+  --paper: #181b1f;
+  --paper-card: #22262b;
+  --paper-2: #2b3036;
+  --edge: #383e46;
+  --ink: #f1ece2;
+  --ink-soft: #b0aa9f;
+  --rule: #3a414a;
+  --pen-red: #ff7d6e;
+  --pen-blue: #93b2f2;
+  --hl: #ffe27a;
+  --hl-alpha: 0.38;
+  --cover: #2e3f63;
+  --cover-ink: #f3ead4;
+  --shadow: none;
+  --heat-0: #2c3137;
+  --heat-1: #30503a;
+  --heat-2: #3b7745;
+  --heat-3: #55a45a;
+  --heat-4: #82d178;
+  color-scheme: dark;
+}
+
+.cat-select {
+  color: var(--on-pastel);
+}
