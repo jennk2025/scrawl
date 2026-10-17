@@ -1,6 +1,8 @@
 import { addWeeks } from 'date-fns';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { usePlanner } from '../store/plannerStore';
+import { useActiveBook, usePlanner } from '../store/plannerStore';
+import { defaultFocus } from '../lib/books';
+import { startOfISOWeek } from 'date-fns';
 import { fmt, parseWeekParam, todayISO, toISO, weekDays, weekParam } from '../lib/dates';
 import { activeTasks } from '../lib/day';
 import { HandCheckbox, Highlight, Strike } from '../components/Hand';
@@ -9,8 +11,9 @@ export default function WeekView() {
   const { w } = useParams();
   const days = usePlanner((s) => s.days);
   const toggleTask = usePlanner((s) => s.toggleTask);
-  const monday = parseWeekParam(w);
-  if (!monday) return <Navigate to={`/week/${weekParam(new Date())}`} replace />;
+  const book = useActiveBook();
+  const monday = w === undefined ? startOfISOWeek(defaultFocus(book.year)) : parseWeekParam(w);
+  if (!monday) return <Navigate to="/week" replace />;
 
   const today = todayISO();
   const dates = weekDays(monday).map(toISO);
@@ -26,7 +29,7 @@ export default function WeekView() {
           {fmt(dates[0], 'M월 d일')} – {fmt(dates[6], 'M월 d일')}
         </h1>
         <Link className="nav-arrow" to={`/week/${weekParam(addWeeks(monday, 1))}`} aria-label="다음 주">›</Link>
-        <Link className="btn-text" to={`/review/${w}`}>이번 주 정리 →</Link>
+        <Link className="btn-text" to={`/review/${weekParam(monday)}`}>이번 주 정리 →</Link>
       </div>
 
       <div className="week-progress paper-card">

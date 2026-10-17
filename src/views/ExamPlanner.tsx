@@ -14,7 +14,7 @@ const UNITS: ExamUnit[] = ['쪽', '강', '문제', '단원'];
 export default function ExamPlanner() {
   const exams = usePlanner((s) => s.exams);
   const days = usePlanner((s) => s.days);
-  const { addExam, replanExam, removeExam, setExamDone } = usePlanner.getState();
+  const { addExam, replanExam, removeExam, setExamDone, updateExam } = usePlanner.getState();
   const today = todayISO();
 
   const [form, setForm] = useState<Omit<Exam, 'id'>>({
@@ -28,6 +28,7 @@ export default function ExamPlanner() {
     skipWeekends: false,
   });
   const [excl, setExcl] = useState('');
+  const [editing, setEditing] = useState<{ id: string; name: string; date: string } | null>(null);
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   const preview = form.split ? planExam({ ...form, id: 'preview' }, today, rangeUnits(form.start, form.end)) : [];
@@ -146,6 +147,25 @@ export default function ExamPlanner() {
           return (
             <li key={ex.id} className="paper-card exam-item">
               <DdayBadge exam={ex} from={today} />
+              {editing?.id === ex.id ? (
+                <form
+                  className="exam-info"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!editing.name.trim()) return;
+                    updateExam(ex.id, { name: editing.name.trim(), date: editing.date });
+                    setEditing(null);
+                  }}
+                >
+                  <HandInput value={editing.name} onValue={(v) => setEditing({ ...editing, name: v })} aria-label="일정 이름" />
+                  <input type="date" value={editing.date} aria-label="날짜" onChange={(e) => e.target.value && setEditing({ ...editing, date: e.target.value })} />
+                  {split && editing.date !== ex.date && <span className="muted">날짜를 바꾸면 저장 후 "다시 분배"를 눌러 할 일을 새 날짜에 맞춰 주세요.</span>}
+                  <span className="exam-actions">
+                    <button className="btn btn-ink" type="submit" disabled={!editing.name.trim()}>저장</button>
+                    <button className="btn-text" type="button" onClick={() => setEditing(null)}>취소</button>
+                  </span>
+                </form>
+              ) : (
               <div className="exam-info">
                 <b>{ex.name}</b>
                 <span className="muted">
@@ -159,7 +179,11 @@ export default function ExamPlanner() {
                   </>
                 )}
               </div>
+              )}
               <div className="exam-actions">
+                {editing?.id !== ex.id && (
+                  <button className="btn" type="button" onClick={() => setEditing({ id: ex.id, name: ex.name, date: ex.date })}>수정</button>
+                )}
                 {split && ex.date > today && (
                   <button className="btn" type="button" onClick={() => replanExam(ex.id)} title="못 한 분량을 남은 날짜에 다시 나눠요">
                     다시 분배

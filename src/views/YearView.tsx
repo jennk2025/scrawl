@@ -1,5 +1,5 @@
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { usePlanner } from '../store/plannerStore';
+import { useActiveBook, usePlanner } from '../store/plannerStore';
 import { WEEKDAYS, monthGrid, monthParam, todayISO, toISO } from '../lib/dates';
 import { dayStats, heatLevel } from '../lib/heat';
 
@@ -7,8 +7,9 @@ export default function YearView() {
   const { year } = useParams();
   const navigate = useNavigate();
   const days = usePlanner((s) => s.days);
-  const y = Number(year);
-  if (!Number.isInteger(y) || y < 1900 || y > 2999) return <Navigate to={`/year/${new Date().getFullYear()}`} replace />;
+  const book = useActiveBook();
+  const y = year === undefined ? book.year : Number(year);
+  if (!Number.isInteger(y) || y < 1900 || y > 2999) return <Navigate to="/year" replace />;
 
   const today = todayISO();
   const yearDays = Object.entries(days).filter(([d]) => d.startsWith(`${y}-`));

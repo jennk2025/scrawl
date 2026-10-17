@@ -1218,12 +1218,9 @@
 .cover-swatch.is-on {
   box-shadow: 0 0 0 2.5px var(--ink);
 }
-button.brand {
-  background: none;
-  border: 0;
-  padding: 0;
+a.brand {
   color: inherit;
-  cursor: pointer;
+  text-decoration: none;
 }
 
 /* ── 습관: 연속 기록 · 요일 · 도장 ─────────────── */
@@ -1542,36 +1539,6 @@ button.brand {
 }
 
 /* ── 시작 화면: 공책 표지 ─────────────────── */
-.intro {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  justify-items: center;
-  gap: 1.4rem;
-  padding: 1rem;
-  background: var(--desk);
-  perspective: 1800px;
-}
-.intro.is-opening {
-  animation: intro-out 0.45s ease-in 0.85s forwards;
-}
-.nb {
-  position: relative;
-  width: min(300px, 72vw);
-  aspect-ratio: 3 / 4;
-  transform-style: preserve-3d;
-  cursor: pointer;
-  animation: nb-in 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  filter: drop-shadow(0 26px 22px rgba(0, 0, 0, 0.25));
-}
-.nb:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 8px;
-  border-radius: 12px;
-}
 .nb-pages {
   position: absolute;
   inset: 5px 0 5px 6px;
@@ -1593,10 +1560,6 @@ button.brand {
   backface-visibility: hidden;
   --mark-bg: var(--cover-ink);
   --mark-fg: var(--cover);
-}
-.nb.is-open .nb-cover,
-.intro.is-opening .nb-cover {
-  animation: nb-open 0.95s cubic-bezier(0.55, 0.05, 0.25, 1) forwards;
 }
 .nb-spine {
   position: absolute;
@@ -1636,25 +1599,6 @@ button.brand {
   letter-spacing: 0.3em;
   opacity: 0.7;
 }
-.intro-title {
-  width: 100%;
-  min-width: 0;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-bottom: 2px dashed transparent;
-  outline: none;
-  color: inherit;
-  font: 400 2.3rem/1.1 var(--font-title);
-}
-.intro-title::placeholder {
-  color: inherit;
-  opacity: 0.45;
-}
-.intro-title:hover,
-.intro-title:focus {
-  border-bottom-color: color-mix(in srgb, var(--cover) 55%, transparent);
-}
 .scrawl-brand {
   display: flex;
   align-items: center;
@@ -1674,30 +1618,6 @@ button.brand {
   letter-spacing: 0.28em;
   text-transform: uppercase;
   opacity: 0.7;
-}
-@keyframes nb-in {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.97);
-  }
-}
-@keyframes nb-open {
-  to {
-    transform: rotateY(-165deg);
-  }
-}
-@keyframes intro-out {
-  to {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .nb,
-  .intro.is-opening,
-  .intro.is-opening .nb-cover {
-    animation: none;
-  }
 }
 
 /* ── 포스트잇 메모 (일기와 구분) ─────────────── */
@@ -1729,4 +1649,162 @@ button.brand {
   margin-left: 0.5rem;
   font-weight: 400;
   font-size: 0.8em;
+}
+
+/* ── 첫 화면: 책장 ─────────────────── */
+.lib {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 max(16px, 4vw);
+  background: var(--desk);
+}
+.lib-top {
+  display: flex;
+  align-items: center;
+  padding: 1.1rem 0;
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+}
+.lib-hero {
+  max-width: 1000px;
+  width: 100%;
+  margin: 2.5rem auto 2rem;
+}
+.lib-hero h1 {
+  margin: 0 0 0.8rem;
+  font: 400 clamp(2.2rem, 6vw, 3.6rem) / 1.15 var(--font-title);
+}
+.lib-hero p {
+  margin: 0;
+  max-width: 34rem;
+  opacity: 0.75;
+}
+.lib-shelf {
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  flex: 1;
+}
+.lib-shelf h2 {
+  margin: 0 0 1.2rem;
+  font: 400 1.6rem/1 var(--font-title);
+}
+.lib-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 2rem 1.6rem;
+}
+.lib-item {
+  display: grid;
+  justify-items: start;
+  gap: 0.4rem;
+}
+.shelf-book {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  filter: drop-shadow(0 14px 12px rgba(0, 0, 0, 0.22));
+  transition: transform 0.18s ease;
+}
+.shelf-book:hover,
+.shelf-book:focus-visible {
+  transform: translateY(-4px) rotate(-1deg);
+}
+.shelf-book:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 5px;
+  border-radius: 12px;
+}
+.shelf-book .nb-cover {
+  justify-content: flex-end;
+  padding: 11% 8% 12% 17%;
+  text-align: left;
+}
+.shelf-title {
+  font: 400 1.35rem/1.15 var(--font-title);
+  overflow-wrap: anywhere;
+}
+.lib-meta {
+  margin: 0.2rem 0 0;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+.lib-remove {
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+.shelf-new {
+  display: grid;
+  place-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  padding: 1rem;
+  border: 2px dashed var(--edge);
+  border-radius: 6px 14px 14px 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.shelf-new span {
+  font-size: 2rem;
+  line-height: 1;
+}
+.shelf-new:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+.shelf-new:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.lib-form {
+  display: grid;
+  gap: 1rem;
+  max-width: 28rem;
+  margin-top: 2rem;
+  padding: 1.2rem;
+}
+.lib-form h3 {
+  margin: 0;
+  font: 400 1.3rem/1 var(--font-title);
+}
+.lib-field {
+  display: grid;
+  gap: 0.35rem;
+}
+.lib-field > span {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+.lib-field select,
+.lib-field input {
+  padding: 0.5rem 0.65rem;
+  border: 1.5px solid var(--edge);
+  border-radius: 8px;
+  background: var(--paper-card);
+  color: inherit;
+  font: inherit;
+}
+.lib-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.lib-foot {
+  max-width: 1000px;
+  width: 100%;
+  margin: 3rem auto 0;
+  padding: 1.2rem 0 1.6rem;
+  border-top: 1.5px solid var(--edge);
+  font-size: 0.85rem;
+  opacity: 0.6;
 }

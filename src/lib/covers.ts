@@ -9,6 +9,3 @@ export const COVERS = [
 ] as const;
 
 export const coverById = (id: string) => COVERS.find((c) => c.id === id) ?? COVERS[0];
-
-/** 헤더의 제목을 누르면 표지를 다시 보여 달라는 신호 */
-export const SHOW_COVER = 'planner:show-cover';

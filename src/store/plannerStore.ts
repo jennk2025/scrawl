@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { CarryMode, Category, DayEntry, Exam, Habit, ISODate, PlannerData, Task, Theme } from '../types';
+import type { Book, CarryMode, Category, DayEntry, Exam, Habit, ISODate, PlannerData, Task, Theme } from '../types';
 import { carryOver } from '../lib/carryOver';
 import { emptyDay, newId } from '../lib/day';
 import { todayISO } from '../lib/dates';
+import { bookId, booksFromLegacy } from '../lib/books';
 import { doneUnits, examTaskTitle, planExam, rangeUnits } from '../lib/examPlanner';
 import { STORAGE_KEY, plannerStorage } from './storage';
 
@@ -55,8 +56,8 @@ const initialData = (): PlannerData => ({
   inbox: [],
   theme: 'system',
   carryMode: 'auto',
-  notebookTitle: 'my planner',
-  notebookCover: 'navy',
+  books: [{ id: bookId(new Date().getFullYear()), year: new Date().getFullYear(), title: 'my planner', cover: 'navy' }],
+  activeBookId: bookId(new Date().getFullYear()),
 });
 
 interface Actions {
@@ -75,6 +76,8 @@ interface Actions {
   addExam: (exam: Omit<Exam, 'id'>) => void;
   replanExam: (id: string) => void;
   removeExam: (id: string) => void;
+  /** 일정 이름·날짜 고치기. 이름을 바꾸면 분배된 할 일 제목도 같이 바뀐다 */
+  updateExam: (id: string, patch: Partial<Pick<Exam, 'name' | 'date'>>) => void;
   /** 일정을 끝냄(또는 되돌림). 끝내면 남은 분배 할 일은 정리한다 */
   setExamDone: (id: string, done: boolean) => void;
   addCategory: (name: string, color: string) => void;
@@ -88,8 +91,12 @@ interface Actions {
   runCarryOver: () => number;
   setTheme: (t: Theme) => void;
   setCarryMode: (m: CarryMode) => void;
-  setNotebookTitle: (t: string) => void;
-  setNotebookCover: (id: string) => void;
+  /** 새 책(연도 일기장)을 만들고 id를 돌려준다. 그 해 책이 이미 있으면 그 책을 돌려준다. */
+  addBook: (year: number, title: string, cover: string) => string;
+  updateBook: (id: string, patch: Partial<Pick<Book, 'title' | 'cover'>>) => void;
+  /** 책장에서만 뺀다. 날짜별 기록은 지우지 않는다 (같은 해 책을 다시 만들면 돌아온다) */
+  removeBook: (id: string) => void;
+  setActiveBook: (id: string) => void;
   importData: (data: PlannerData) => void;
 }
 
@@ -200,6 +207,20 @@ export const usePlanner = create<PlannerState>()(
           exams: s.exams.map((x) => (x.id === id ? { ...x, done } : x)),
           days: done ? stripOpenExamTasks(s.days, id) : s.days,
         })),
+      updateExam: (id, patch) =>
+        set((s) => {
+          const old = s.exams.find((x) => x.id === id);
+          if (!old) return {};
+          const exam = { ...old, ...patch };
+          const exams = s.exams.map((x) => (x.id === id ? exam : x));
+          if (exam.name === old.name) return { exams };
+          const days: Record<ISODate, DayEntry> = {};
+          for (const [d, e] of Object.entries(s.days))
+            days[d] = e.tasks.some((t) => t.examId === id && t.examUnits)
+              ? { ...e, tasks: e.tasks.map((t) => (t.examId === id && t.examUnits ? { ...t, title: examTaskTitle(exam, t.examUnits) } : t)) }
+              : e;
+          return { exams, days };
+        }),
       removeExam: (id) =>
         set((s) => ({ exams: s.exams.filter((x) => x.id !== id), days: stripOpenExamTasks(s.days, id) })),
 
@@ -234,18 +255,39 @@ export const usePlanner = create<PlannerState>()(
       },
       setTheme: (theme) => set({ theme }),
       setCarryMode: (carryMode) => set({ carryMode }),
-      setNotebookTitle: (notebookTitle) => set({ notebookTitle }),
-      setNotebookCover: (notebookCover) => set({ notebookCover }),
+      addBook: (year, title, cover) => {
+        const id = bookId(year);
+        if (get().books.some((b) => b.id === id)) return id;
+        set((s) => ({ books: [...s.books, { id, year, title, cover }].sort((a, b) => a.year - b.year) }));
+        return id;
+      },
+      updateBook: (id, patch) => set((s) => ({ books: s.books.map((b) => (b.id === id ? { ...b, ...patch } : b)) })),
+      removeBook: (id) =>
+        set((s) => {
+          if (s.books.length <= 1) return {};
+          const books = s.books.filter((b) => b.id !== id);
+          return { books, activeBookId: s.activeBookId === id ? books[0].id : s.activeBookId };
+        }),
+      setActiveBook: (activeBookId) => set({ activeBookId }),
       importData: (data) => set(data),
     }),
     {
       name: STORAGE_KEY,
       storage: plannerStorage,
-      version: 4,
-      // 기록은 그대로 두고 분류만 정리한다 (v3: 과목 분류 합치기, v4: 분류마다 다른 색)
+      version: 5,
+      // 기록은 그대로 두고 분류만 정리한다 (v3: 과목 분류 합치기, v4: 분류마다 다른 색, v5: 연도별 책장)
       migrate: (persisted, version) => {
-        const data = persisted as PlannerData;
+        const data = persisted as PlannerData & { notebookTitle?: string; notebookCover?: string };
         if (!Array.isArray(data?.categories)) return data as PlannerState;
+        if (version < 5 || !Array.isArray(data.books) || !data.books.length) {
+          data.books = booksFromLegacy(data.days ?? {}, data.notebookTitle, data.notebookCover);
+          delete data.notebookTitle;
+          delete data.notebookCover;
+        }
+        if (!data.books.some((b) => b.id === data.activeBookId)) {
+          const y = new Date().getFullYear();
+          data.activeBookId = (data.books.find((b) => b.year === y) ?? data.books[0]).id;
+        }
         if (version < 3) mergeSubjects(data);
         const all = data.categories.map((c) => c.color);
         const used: string[] = [];
@@ -270,7 +312,11 @@ export function pickData(s: PlannerState): PlannerData {
     inbox: s.inbox,
     theme: s.theme,
     carryMode: s.carryMode,
-    notebookTitle: s.notebookTitle,
-    notebookCover: s.notebookCover,
+    books: s.books,
+    activeBookId: s.activeBookId,
   };
 }
+
+/** 지금 펼쳐 둔 책 (책장이 비는 일은 없지만 혹시 모르니 첫 권으로) */
+export const useActiveBook = (): Book =>
+  usePlanner((s) => s.books.find((b) => b.id === s.activeBookId) ?? s.books[0]);

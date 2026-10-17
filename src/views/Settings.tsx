@@ -1,5 +1,5 @@
 import { useRef, useState, type CSSProperties } from 'react';
-import { nextFreeColor, pickData, usePlanner } from '../store/plannerStore';
+import { nextFreeColor, pickData, useActiveBook, usePlanner } from '../store/plannerStore';
 import { exportBackup, parseBackup } from '../store/storage';
 import type { CarryMode, PlannerData, Theme } from '../types';
 import { todayISO } from '../lib/dates';
@@ -22,8 +22,10 @@ export default function Settings() {
   const theme = usePlanner((s) => s.theme);
   const categories = usePlanner((s) => s.categories);
   const carryMode = usePlanner((s) => s.carryMode);
-  const title = usePlanner((s) => s.notebookTitle);
-  const { setTheme, setCarryMode, setNotebookTitle, addCategory, removeCategory, importData } = usePlanner.getState();
+  const book = useActiveBook();
+  const title = book.title;
+  const setNotebookTitle = (t: string) => usePlanner.getState().updateBook(book.id, { title: t });
+  const { setTheme, setCarryMode, addCategory, removeCategory, importData } = usePlanner.getState();
   const [name, setName] = useState('');
   const [chosen, setChosen] = useState<string>();
   const [msg, setMsg] = useState('');

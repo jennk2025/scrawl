@@ -1,7 +1,8 @@
 import { useMemo, type CSSProperties } from 'react';
 import { addMonths } from 'date-fns';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { usePlanner } from '../store/plannerStore';
+import { useActiveBook, usePlanner } from '../store/plannerStore';
+import { defaultMonth } from '../lib/books';
 import { WEEKDAYS, fmt, monthGrid, monthParam, parseMonthParam, toISO, todayISO } from '../lib/dates';
 import { activeTasks } from '../lib/day';
 import type { Exam } from '../types';
@@ -15,7 +16,8 @@ export default function MonthView() {
   const navigate = useNavigate();
   const days = usePlanner((s) => s.days);
   const exams = usePlanner((s) => s.exams);
-  const base = parseMonthParam(ym);
+  const book = useActiveBook();
+  const base = ym === undefined ? defaultMonth(book.year) : parseMonthParam(ym);
 
   const examsOn = useMemo(() => {
     const m = new Map<string, Exam[]>();
@@ -23,7 +25,7 @@ export default function MonthView() {
     return m;
   }, [exams]);
 
-  if (!base) return <Navigate to={`/month/${monthParam(new Date())}`} replace />;
+  if (!base) return <Navigate to="/month" replace />;
   const today = todayISO();
 
   return (
@@ -35,7 +37,7 @@ export default function MonthView() {
           <Link className="nav-arrow" to={`/month/${monthParam(addMonths(base, -1))}`} aria-label="지난달">‹</Link>
           <h2 className="title">{fmt(base, 'yyyy년 M월')}</h2>
           <Link className="nav-arrow" to={`/month/${monthParam(addMonths(base, 1))}`} aria-label="다음 달">›</Link>
-          <Link className="btn-text" to={`/month/${monthParam(new Date())}`}>이번 달</Link>
+          <Link className="btn-text" to="/month">{book.year === new Date().getFullYear() ? '이번 달' : '처음으로'}</Link>
         </div>
 
         <div className="month-grid paper-card">

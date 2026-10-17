@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { usePlanner } from '../store/plannerStore';
-import { addDaysISO, fmt, fromISO, isValidISO, monthParam, todayISO } from '../lib/dates';
+import { useActiveBook, usePlanner } from '../store/plannerStore';
+import { defaultFocus } from '../lib/books';
+import { addDaysISO, fmt, fromISO, isValidISO, monthParam, todayISO, toISO } from '../lib/dates';
 import { EMPTY_DAY } from '../lib/day';
 import { HandCheckbox } from '../components/Hand';
 import { HandInput } from '../components/HandInput';
@@ -13,8 +14,10 @@ import { currentStreak, isScheduled, isStamped } from '../lib/habits';
 import { MOODS } from '../lib/notebook';
 
 export default function DayNote() {
-  const { date } = useParams();
-  if (!isValidISO(date)) return <Navigate to={`/day/${todayISO()}`} replace />;
+  const { date: param } = useParams();
+  const book = useActiveBook();
+  const date = param === undefined ? toISO(defaultFocus(book.year)) : param;
+  if (!isValidISO(date)) return <Navigate to="/day" replace />;
   // 날짜가 바뀌면 입력 상태를 새로 시작
   return <DayPage key={date} date={date} />;
 }

@@ -1,9 +1,8 @@
 import { useEffect } from 'react';
 import { BrowserRouter, HashRouter, MemoryRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import { usePlanner } from './store/plannerStore';
-import { monthParam } from './lib/dates';
 import { Header } from './components/Header';
-import { BookIntro } from './components/BookIntro';
+import Library from './views/Library';
 import MonthView from './views/MonthView';
 import DayNote from './views/DayNote';
 import WeekView from './views/WeekView';
@@ -14,8 +13,7 @@ import Review from './views/Review';
 import Settings from './views/Settings';
 import Notebook from './views/Notebook';
 
-function Layout() {
-  const { pathname } = useLocation();
+function Root() {
   const theme = usePlanner((s) => s.theme);
   const carryMode = usePlanner((s) => s.carryMode);
 
@@ -36,9 +34,13 @@ function Layout() {
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, [carryMode]);
 
+  return <Outlet />;
+}
+
+function Layout() {
+  const { pathname } = useLocation();
   return (
     <>
-      <BookIntro />
       <Header />
       <main key={pathname} className={`page ${pathname.startsWith('/day') ? 'flip-in' : 'fade-in'}`}>
         <Outlet />
@@ -59,17 +61,20 @@ export default function App() {
   return (
     <Router>
       <Routes>
+        <Route element={<Root />}>
         <Route element={<Layout />}>
-          <Route path="/year/:year" element={<YearView />} />
-          <Route path="/month/:ym" element={<MonthView />} />
-          <Route path="/week/:w" element={<WeekView />} />
-          <Route path="/day/:date" element={<DayNote />} />
+          <Route path="/year/:year?" element={<YearView />} />
+          <Route path="/month/:ym?" element={<MonthView />} />
+          <Route path="/week/:w?" element={<WeekView />} />
+          <Route path="/day/:date?" element={<DayNote />} />
           <Route path="/exams" element={<ExamPlanner />} />
           <Route path="/habits" element={<Habits />} />
-          <Route path="/review/:w" element={<Review />} />
-          <Route path="/notebook/:ym" element={<Notebook />} />
+          <Route path="/review/:w?" element={<Review />} />
+          <Route path="/notebook/:ym?" element={<Notebook />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<Navigate to={`/month/${monthParam(new Date())}`} replace />} />
+        </Route>
+        <Route path="/" element={<Library />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
     </Router>

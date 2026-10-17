@@ -83,8 +83,17 @@ export interface PlannerData {
   inbox: InboxItem[];
   theme: Theme;
   carryMode: CarryMode;
-  /** 표지에 쓰이는 노트 제목 */
-  notebookTitle: string;
+  /** 책장에 꽂힌 일기장들 (연도마다 한 권) */
+  books: Book[];
+  /** 지금 펼쳐 둔 책 */
+  activeBookId: string;
+}
+
+/** 한 해 치 일기장. 기록은 날짜로 저장되어 있어서 연도가 곧 책을 정한다. */
+export interface Book {
+  id: string;
+  year: number;
+  title: string;
   /** 표지 색 id (lib/covers.ts) */
-  notebookCover: string;
+  cover: string;
 }

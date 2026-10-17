@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
-import { usePlanner } from '../store/plannerStore';
+import { useActiveBook } from '../store/plannerStore';
 import { fmt } from '../lib/dates';
 import { moodEmoji, type NoteEntry } from '../lib/notebook';
 
@@ -49,7 +49,7 @@ function DayPage({ entry, no }: { entry: NoteEntry; no: number }) {
 
 /** 기록이 있는 날들을 책장처럼 넘기며 읽는다. 넓은 화면은 두 쪽, 좁은 화면은 한 쪽. */
 export function BookReader({ entries, startDate }: { entries: NoteEntry[]; startDate?: string }) {
-  const title = usePlanner((s) => s.notebookTitle);
+  const { title, year } = useActiveBook();
   const wide = useWide();
   const per = wide ? 2 : 1;
   const pages: Page[] = [{ kind: 'title' }, ...entries.map((entry): Page => ({ kind: 'day', entry }))];
@@ -101,7 +101,7 @@ export function BookReader({ entries, startDate }: { entries: NoteEntry[]; start
       >
         {page.kind === 'title' && (
           <div className="bk-title">
-            <span>{new Date().getFullYear()}</span>
+            <span>{year}</span>
             <h2>{title}</h2>
             <p className="muted">{entries.length}일의 기록</p>
             <p className="bk-hint">{wide ? '‹ › 키나 아래 버튼으로 넘겨 보세요' : '옆으로 밀어서 넘겨 보세요'}</p>

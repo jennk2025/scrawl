@@ -1,5 +1,6 @@
 import { createJSONStorage, type StateStorage } from 'zustand/middleware';
-import type { PlannerData } from '../types';
+import type { Book, PlannerData } from '../types';
+import { booksFromLegacy } from '../lib/books';
 
 /**
  * 저장소 레이어. 지금은 브라우저 localStorage에 저장한다.
@@ -49,7 +50,24 @@ export function parseBackup(text: string): PlannerData {
     inbox: Array.isArray(data.inbox) ? data.inbox : [],
     theme: data.theme === 'dark' || data.theme === 'light' ? data.theme : 'system',
     carryMode: data.carryMode === 'manual' ? 'manual' : 'auto',
-    notebookCover: typeof data.notebookCover === 'string' ? data.notebookCover : 'navy',
-    notebookTitle: typeof data.notebookTitle === 'string' && data.notebookTitle ? data.notebookTitle : 'my planner',
+    ...readBooks(data),
   };
+}
+
+/** 책장 읽기. 예전 백업(책장 없음)은 제목·표지를 이어받아 연도별로 책을 만든다. */
+function readBooks(data: Record<string, unknown>): Pick<PlannerData, 'books' | 'activeBookId'> {
+  const raw = data.books;
+  const valid = (b: unknown): b is Book =>
+    !!b && typeof b === 'object' && typeof (b as Book).id === 'string' && Number.isInteger((b as Book).year) &&
+    typeof (b as Book).title === 'string' && typeof (b as Book).cover === 'string';
+  const books = Array.isArray(raw) && raw.some(valid)
+    ? raw.filter(valid)
+    : booksFromLegacy(
+        data.days as PlannerData['days'],
+        typeof data.notebookTitle === 'string' ? data.notebookTitle : undefined,
+        typeof data.notebookCover === 'string' ? data.notebookCover : undefined,
+      );
+  const year = new Date().getFullYear();
+  const active = books.find((b) => b.id === data.activeBookId) ?? books.find((b) => b.year === year) ?? books[0];
+  return { books, activeBookId: active.id };
 }

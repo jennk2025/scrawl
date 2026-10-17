@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { addMonths } from 'date-fns';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { usePlanner } from '../store/plannerStore';
+import { useActiveBook, usePlanner } from '../store/plannerStore';
+import { defaultMonth } from '../lib/books';
 import { fmt, monthParam, parseMonthParam } from '../lib/dates';
 import { buildEntries, moodEmoji } from '../lib/notebook';
 import { Highlight } from '../components/Hand';
@@ -12,10 +13,11 @@ export default function Notebook() {
   const { ym } = useParams();
   const days = usePlanner((s) => s.days);
   const habits = usePlanner((s) => s.habits);
-  const title = usePlanner((s) => s.notebookTitle);
+  const book = useActiveBook();
+  const title = book.title;
   const [mode, setMode] = useState<'book' | 'list'>('book');
-  const month = parseMonthParam(ym);
-  if (!month) return <Navigate to={`/notebook/${monthParam(new Date())}`} replace />;
+  const month = ym === undefined ? defaultMonth(book.year) : parseMonthParam(ym);
+  if (!month) return <Navigate to="/notebook" replace />;
 
   const prefix = monthParam(month);
   const all = buildEntries(days, habits);

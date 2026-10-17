@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react';
-import { addWeeks } from 'date-fns';
+import { addWeeks, startOfISOWeek } from 'date-fns';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { usePlanner } from '../store/plannerStore';
+import { useActiveBook, usePlanner } from '../store/plannerStore';
+import { defaultFocus } from '../lib/books';
 import { fmt, parseWeekParam, todayISO, toISO, weekDays, weekParam } from '../lib/dates';
 import { activeTasks } from '../lib/day';
 import { Highlight } from '../components/Hand';
@@ -12,8 +13,9 @@ export default function Review() {
   const days = usePlanner((s) => s.days);
   const categories = usePlanner((s) => s.categories);
   const migrateTask = usePlanner((s) => s.migrateTask);
-  const monday = parseWeekParam(w);
-  if (!monday) return <Navigate to={`/review/${weekParam(new Date())}`} replace />;
+  const book = useActiveBook();
+  const monday = w === undefined ? startOfISOWeek(defaultFocus(book.year)) : parseWeekParam(w);
+  if (!monday) return <Navigate to="/review" replace />;
 
   const dates = weekDays(monday).map(toISO);
   const nextMonday = toISO(addWeeks(monday, 1));
