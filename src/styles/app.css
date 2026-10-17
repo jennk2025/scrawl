@@ -1541,7 +1541,7 @@ button.brand {
   }
 }
 
-/* ── 시작 화면: 모던 표지 카드 ─────────────────── */
+/* ── 시작 화면: 공책 표지 ─────────────────── */
 .intro {
   position: fixed;
   inset: 0;
@@ -1550,57 +1550,89 @@ button.brand {
   place-items: center;
   align-content: center;
   justify-items: center;
-  gap: 1.1rem;
+  gap: 1.4rem;
   padding: 1rem;
-  background:
-    radial-gradient(900px 500px at 50% -10%, color-mix(in srgb, var(--cover) 18%, transparent), transparent 70%),
-    var(--desk);
+  background: var(--desk);
+  perspective: 1800px;
 }
 .intro.is-opening {
-  animation: intro-out 0.5s ease-in 0.25s forwards;
+  animation: intro-out 0.45s ease-in 0.85s forwards;
 }
-.intro-card {
+.nb {
   position: relative;
+  width: min(300px, 72vw);
+  aspect-ratio: 3 / 4;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  animation: nb-in 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  filter: drop-shadow(0 26px 22px rgba(0, 0, 0, 0.25));
+}
+.nb:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 8px;
+  border-radius: 12px;
+}
+.nb-pages {
+  position: absolute;
+  inset: 5px 0 5px 6px;
+  background: var(--paper-card);
+  border-radius: 2px 8px 8px 2px;
+  box-shadow: 3px 0 0 -0.5px var(--edge), 6px 0 0 -1px var(--edge);
+}
+.nb-cover {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: min(340px, 82vw);
-  aspect-ratio: 4 / 5;
-  padding: 1.7rem 1.6rem 1.5rem;
+  padding: 11% 11% 14% 17%;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.14), transparent 45%), var(--cover);
   color: var(--cover-ink);
-  background:
-    radial-gradient(120% 70% at 100% 0%, rgba(255, 255, 255, 0.16), transparent 60%),
-    var(--cover);
-  border-radius: 22px;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 30px 50px -28px rgba(0, 0, 0, 0.55), 0 8px 18px -10px rgba(0, 0, 0, 0.35);
-  cursor: pointer;
-  animation: card-in 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  border-radius: 6px 14px 14px 6px;
+  transform-origin: left center;
+  backface-visibility: hidden;
   --mark-bg: var(--cover-ink);
   --mark-fg: var(--cover);
 }
-.intro-card:focus-visible {
-  outline: 3px solid var(--cover-ink);
-  outline-offset: 4px;
+.nb.is-open .nb-cover,
+.intro.is-opening .nb-cover {
+  animation: nb-open 0.95s cubic-bezier(0.55, 0.05, 0.25, 1) forwards;
 }
-.intro.is-opening .intro-card {
-  animation: card-open 0.6s cubic-bezier(0.5, 0, 0.2, 1) forwards;
-}
-.intro-card::after {
-  content: '';
+.nb-spine {
   position: absolute;
-  left: 1.6rem;
-  right: 1.6rem;
-  bottom: 4.4rem;
-  height: 1px;
-  background: var(--cover-ink);
-  opacity: 0.25;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 9%;
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 6px 0 0 6px;
+  box-shadow: inset -5px 0 7px -5px rgba(0, 0, 0, 0.4);
 }
-.intro-mid {
+.nb-elastic {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 11%;
+  width: 8px;
+  background: var(--cover-accent);
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.18);
+}
+.nb-brand {
+  position: relative;
+}
+.nb-label {
+  position: relative;
   display: grid;
-  gap: 0.35rem;
+  gap: 0.3rem;
+  padding: 0.8rem 1rem 0.9rem;
+  margin-right: 12%;
+  background: var(--cover-ink);
+  color: var(--cover);
+  border-radius: 4px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.22);
 }
-.intro-year {
-  font: 700 0.78rem/1 system-ui, sans-serif;
+.nb-label span {
+  font: 700 0.7rem/1 system-ui, sans-serif;
   letter-spacing: 0.3em;
   opacity: 0.7;
 }
@@ -1613,72 +1645,45 @@ button.brand {
   border-bottom: 2px dashed transparent;
   outline: none;
   color: inherit;
-  font: 400 3rem/1.1 var(--font-title);
+  font: 400 2.3rem/1.1 var(--font-title);
 }
 .intro-title::placeholder {
   color: inherit;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 .intro-title:hover,
 .intro-title:focus {
-  border-bottom-color: color-mix(in srgb, var(--cover-ink) 60%, transparent);
-}
-.intro-go {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font: 700 0.9rem/1 system-ui, sans-serif;
-  letter-spacing: 0.04em;
-}
-.intro-go i {
-  display: grid;
-  place-items: center;
-  width: 2.3rem;
-  height: 2.3rem;
-  border-radius: 50%;
-  background: var(--cover-ink);
-  color: var(--cover);
-  font-style: normal;
-  transition: transform 0.2s;
-}
-.intro-card:hover .intro-go i {
-  transform: translateX(4px);
-}
-.intro-skip {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--ink-soft);
+  border-bottom-color: color-mix(in srgb, var(--cover) 55%, transparent);
 }
 .scrawl-brand {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.55rem;
 }
 .scrawl-text {
   display: grid;
   line-height: 1;
 }
 .scrawl-text b {
-  font: 700 1.6rem/1 var(--font-hand);
+  font: 700 1.35rem/1 var(--font-hand);
   letter-spacing: 0.02em;
 }
 .scrawl-text span {
-  margin-top: 0.28rem;
-  font: 700 0.62rem/1 system-ui, sans-serif;
-  letter-spacing: 0.3em;
+  margin-top: 0.25rem;
+  font: 700 0.55rem/1 system-ui, sans-serif;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
   opacity: 0.7;
 }
-@keyframes card-in {
+@keyframes nb-in {
   from {
     opacity: 0;
     transform: translateY(16px) scale(0.97);
   }
 }
-@keyframes card-open {
+@keyframes nb-open {
   to {
-    opacity: 0;
-    transform: translateY(-24px) scale(1.06);
+    transform: rotateY(-165deg);
   }
 }
 @keyframes intro-out {
@@ -1688,9 +1693,9 @@ button.brand {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .intro-card,
+  .nb,
   .intro.is-opening,
-  .intro.is-opening .intro-card {
+  .intro.is-opening .nb-cover {
     animation: none;
   }
 }

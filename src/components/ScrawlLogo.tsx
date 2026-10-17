@@ -19,7 +19,7 @@ export function ScrawlMark({ size = 44 }: { size?: number }) {
 export function ScrawlBrand() {
   return (
     <div className="scrawl-brand">
-      <ScrawlMark size={40} />
+      <ScrawlMark size={34} />
       <div className="scrawl-text">
         <b>Scrawl</b>
         <span>Daily Planner</span>
