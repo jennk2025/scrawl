@@ -4,7 +4,7 @@ import type { Book, BookData, CarryMode, Category, DayEntry, Exam, Habit, ISODat
 import { carryOver } from '../lib/carryOver';
 import { emptyDay, newId } from '../lib/day';
 import { todayISO } from '../lib/dates';
-import { bookDataOf, bookId, booksFromLegacy, splitLegacyBooks } from '../lib/books';
+import { DEFAULT_TITLE, bookDataOf, bookId, booksFromLegacy, splitLegacyBooks } from '../lib/books';
 import { doneUnits, examTaskTitle, planExam, rangeUnits } from '../lib/examPlanner';
 import { STORAGE_KEY, plannerStorage } from './storage';
 
@@ -99,7 +99,7 @@ interface Actions {
   /** 새 일기장을 책장에 꽂고 id를 돌려준다. 기록은 다른 일기장과 따로 비어 있는 채로 시작한다. */
   addBook: (year: number, title: string, cover: string) => string;
   updateBook: (id: string, patch: Partial<Pick<Book, 'title' | 'cover'>>) => void;
-  /** 일기장을 기록째 지운다 (마지막 한 권은 지울 수 없다) */
+  /** 일기장을 기록째 지운다 (마지막 한 권이면 빈 새 일기장으로 바뀐다) */
   removeBook: (id: string) => void;
   setActiveBook: (id: string) => void;
   importData: (data: PlannerData) => void;
@@ -279,7 +279,12 @@ export const usePlanner = create<PlannerState>()(
       updateBook: (id, patch) => set((s) => ({ books: s.books.map((b) => (b.id === id ? { ...b, ...patch } : b)) })),
       removeBook: (id) =>
         set((s) => {
-          if (s.books.length <= 1) return {};
+          if (s.books.length <= 1) {
+            // 마지막 한 권을 지우면 빈 새 일기장으로 바꿔 둔다
+            const year = new Date().getFullYear();
+            const fresh: Book = { id: `book-${newId()}`, year, title: DEFAULT_TITLE, cover: 'navy' };
+            return { books: [fresh], activeBookId: fresh.id, ...freshBookData() };
+          }
           const books = s.books.filter((b) => b.id !== id);
           if (s.activeBookId !== id) return { books };
           return openBook(books, books[0].id);

@@ -84,11 +84,9 @@ export default function Library() {
                 </span>
               </div>
               <p className="lib-meta">{recordedDays(b.id === activeBookId ? days : b.data?.days ?? {}, b.year)}일 기록</p>
-              {books.length > 1 && (
-                <ConfirmButton className="btn-text lib-remove" ask="지우기" title="이 일기장과 안의 기록이 모두 지워져요" onConfirm={() => removeBook(b.id)}>
-                  일기장 지우기
-                </ConfirmButton>
-              )}
+              <ConfirmButton className="btn-text lib-remove" ask="지우기" title="이 일기장과 안의 기록이 모두 지워져요" onConfirm={() => removeBook(b.id)}>
+                일기장 지우기
+              </ConfirmButton>
             </div>
           ))}
 
