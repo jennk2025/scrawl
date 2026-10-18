@@ -1748,6 +1748,9 @@ a.brand {
   color: inherit;
   font: 400 1.35rem/1.15 var(--font-title);
   cursor: text;
+  resize: none;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 .shelf-title:hover,
 .shelf-title:focus {

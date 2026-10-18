@@ -11,6 +11,13 @@ const coverVars = (id: string) => {
   return { '--cover': c.bg, '--cover-ink': c.ink, '--cover-accent': c.accent } as CSSProperties;
 };
 
+/** 제목이 길어도 다 보이게 글자 수만큼 칸을 늘린다 */
+const fit = (el: HTMLTextAreaElement | null) => {
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = `${el.scrollHeight}px`;
+};
+
 /** 첫 화면: 연도별 일기장이 꽂힌 책장. 책을 누르면 그 일기장으로 들어가고, 새 해 일기장을 만들 수 있다. */
 export default function Library() {
   const navigate = useNavigate();
@@ -61,15 +68,17 @@ export default function Library() {
                   <button type="button" className="shelf-open" onClick={() => open(b.id)} aria-label={`${b.year} ${b.title} 열기`} />
                   <label className="nb-label">
                     <span>{b.year}</span>
-                    <input
+                    <textarea
                       className="shelf-title"
+                      rows={1}
+                      ref={fit}
                       value={b.title}
                       maxLength={24}
                       placeholder={DEFAULT_TITLE}
                       aria-label="일기장 제목 고치기"
-                      onChange={(e) => updateBook(b.id, { title: e.target.value })}
+                      onChange={(e) => updateBook(b.id, { title: e.target.value.replace(/\n/g, ' ') })}
                       onBlur={(e) => !e.target.value.trim() && updateBook(b.id, { title: DEFAULT_TITLE })}
-                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), e.currentTarget.blur())}
                     />
                   </label>
                 </span>
