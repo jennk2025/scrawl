@@ -349,5 +349,8 @@ export function pickData(s: PlannerState, withActive = true): PlannerData {
 }
 
 /** 지금 펼쳐 둔 책 (책장이 비는 일은 없지만 혹시 모르니 첫 권으로) */
-export const useActiveBook = (): Book =>
-  usePlanner((s) => s.books.find((b) => b.id === s.activeBookId) ?? s.books[0]);
+export const useActiveBook = (): Book => {
+  const book = usePlanner((s) => s.books.find((b) => b.id === s.activeBookId) ?? s.books[0]);
+  // 제목을 다 지워도 다른 화면에서는 기본 제목으로 보인다
+  return book.title.trim() ? book : { ...book, title: DEFAULT_TITLE };
+};

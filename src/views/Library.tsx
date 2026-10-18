@@ -11,6 +11,12 @@ const coverVars = (id: string) => {
   return { '--cover': c.bg, '--cover-ink': c.ink, '--cover-accent': c.accent } as CSSProperties;
 };
 
+/** 제목이 길수록 글자를 줄여서 표지 안에 잘 들어가게 한다 */
+const titleSize = (t: string) => {
+  const n = t.length;
+  return n <= 8 ? '1.35rem' : n <= 12 ? '1.15rem' : n <= 18 ? '1rem' : '0.85rem';
+};
+
 /** 제목이 길어도 다 보이게 글자 수만큼 칸을 늘린다 */
 const fit = (el: HTMLTextAreaElement | null) => {
   if (!el) return;
@@ -72,12 +78,12 @@ export default function Library() {
                       className="shelf-title"
                       rows={1}
                       ref={fit}
+                      style={{ fontSize: titleSize(b.title) }}
                       value={b.title}
                       maxLength={24}
                       placeholder={DEFAULT_TITLE}
                       aria-label="일기장 제목 고치기"
                       onChange={(e) => updateBook(b.id, { title: e.target.value.replace(/\n/g, ' ') })}
-                      onBlur={(e) => !e.target.value.trim() && updateBook(b.id, { title: DEFAULT_TITLE })}
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), e.currentTarget.blur())}
                     />
                   </label>
