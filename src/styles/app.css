@@ -1714,22 +1714,50 @@ a.brand {
   transition: transform 0.18s ease;
 }
 .shelf-book:hover,
-.shelf-book:focus-visible {
+.shelf-book:focus-within {
   transform: translateY(-4px) rotate(-1deg);
 }
-.shelf-book:focus-visible {
+.shelf-open {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 6px 14px 14px 6px;
+  cursor: pointer;
+}
+.shelf-open:focus-visible {
   outline: 3px solid var(--ink);
   outline-offset: 5px;
-  border-radius: 12px;
 }
 .shelf-book .nb-cover {
   justify-content: flex-end;
   padding: 11% 8% 12% 17%;
   text-align: left;
 }
+.shelf-book .nb-label {
+  z-index: 1;
+  padding: 0;
+  margin-right: 0;
+  background: none;
+  color: inherit;
+  box-shadow: none;
+}
 .shelf-title {
+  width: 100%;
+  padding: 0.1rem 0.25rem;
+  margin-left: -0.25rem;
+  border: 0;
+  border-bottom: 1.5px dashed transparent;
+  background: transparent;
+  color: inherit;
   font: 400 1.35rem/1.15 var(--font-title);
-  overflow-wrap: anywhere;
+  cursor: text;
+}
+.shelf-title:hover,
+.shelf-title:focus {
+  border-bottom-color: currentColor;
+  outline: none;
 }
 .lib-meta {
   margin: 0.2rem 0 0;

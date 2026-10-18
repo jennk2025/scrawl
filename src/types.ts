@@ -83,17 +83,24 @@ export interface PlannerData {
   inbox: InboxItem[];
   theme: Theme;
   carryMode: CarryMode;
-  /** 책장에 꽂힌 일기장들 (연도마다 한 권) */
+  /** 책장에 꽂힌 일기장들 */
   books: Book[];
   /** 지금 펼쳐 둔 책 */
   activeBookId: string;
 }
 
-/** 한 해 치 일기장. 기록은 날짜로 저장되어 있어서 연도가 곧 책을 정한다. */
+/** 일기장 하나가 따로 가지는 기록 */
+export type BookData = Pick<PlannerData, 'days' | 'exams' | 'categories' | 'habits' | 'inbox'>;
+
+/**
+ * 일기장 한 권. 기록은 책마다 따로다.
+ * 펼쳐 둔 책의 기록은 PlannerData 맨 위(days 등)에 있고, 덮어 둔 책의 기록만 data에 보관한다.
+ */
 export interface Book {
   id: string;
   year: number;
   title: string;
   /** 표지 색 id (lib/covers.ts) */
   cover: string;
+  data?: BookData;
 }

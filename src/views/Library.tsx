@@ -16,15 +16,15 @@ export default function Library() {
   const navigate = useNavigate();
   const books = usePlanner((s) => s.books);
   const days = usePlanner((s) => s.days);
-  const { addBook, removeBook, setActiveBook } = usePlanner.getState();
+  const activeBookId = usePlanner((s) => s.activeBookId);
+  const { addBook, removeBook, setActiveBook, updateBook } = usePlanner.getState();
 
   const thisYear = new Date().getFullYear();
-  const taken = new Set(books.map((b) => b.year));
-  // 아직 책이 없는 해만 고를 수 있게: 작년부터 3년 뒤까지
-  const free = Array.from({ length: 5 }, (_, i) => thisYear - 1 + i).filter((y) => !taken.has(y));
+  // 작년부터 3년 뒤까지
+  const years = Array.from({ length: 5 }, (_, i) => thisYear - 1 + i);
 
   const [making, setMaking] = useState(false);
-  const [year, setYear] = useState<number>(free.find((y) => y >= thisYear) ?? free[0] ?? thisYear + 1);
+  const [year, setYear] = useState<number>(thisYear);
   const [title, setTitle] = useState('');
   const [cover, setCover] = useState<string>(COVERS[0].id);
 
@@ -34,7 +34,6 @@ export default function Library() {
   };
 
   const make = () => {
-    if (!free.includes(year)) return;
     open(addBook(year, title.trim() || DEFAULT_TITLE, cover));
   };
 
@@ -54,21 +53,31 @@ export default function Library() {
         <div className="lib-grid">
           {[...books].sort((a, b) => b.year - a.year).map((b) => (
             <div key={b.id} className="lib-item">
-              <button type="button" className="shelf-book" style={coverVars(b.cover)} onClick={() => open(b.id)} aria-label={`${b.year} ${b.title} 열기`}>
+              <div className="shelf-book" style={coverVars(b.cover)}>
                 <span className="nb-pages" aria-hidden="true" />
                 <span className="nb-cover">
                   <span className="nb-spine" aria-hidden="true" />
                   <span className="nb-elastic" aria-hidden="true" />
+                  <button type="button" className="shelf-open" onClick={() => open(b.id)} aria-label={`${b.year} ${b.title} 열기`} />
                   <span className="nb-label">
                     <span>{b.year}</span>
-                    <b className="shelf-title">{b.title}</b>
+                    <input
+                      className="shelf-title"
+                      value={b.title}
+                      maxLength={24}
+                      placeholder={DEFAULT_TITLE}
+                      aria-label="일기장 제목 고치기"
+                      onChange={(e) => updateBook(b.id, { title: e.target.value })}
+                      onBlur={(e) => !e.target.value.trim() && updateBook(b.id, { title: DEFAULT_TITLE })}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                    />
                   </span>
                 </span>
-              </button>
-              <p className="lib-meta">{recordedDays(days, b.year)}일 기록</p>
+              </div>
+              <p className="lib-meta">{recordedDays(b.id === activeBookId ? days : b.data?.days ?? {}, b.year)}일 기록</p>
               {books.length > 1 && (
-                <ConfirmButton className="btn-text lib-remove" ask="빼기" title="책장에서만 빼요. 기록은 지워지지 않아요" onConfirm={() => removeBook(b.id)}>
-                  책장에서 빼기
+                <ConfirmButton className="btn-text lib-remove" ask="지우기" title="이 일기장과 안의 기록이 모두 지워져요" onConfirm={() => removeBook(b.id)}>
+                  일기장 지우기
                 </ConfirmButton>
               )}
             </div>
@@ -76,9 +85,9 @@ export default function Library() {
 
           {!making && (
             <div className="lib-item">
-              <button type="button" className="shelf-new" onClick={() => setMaking(true)} disabled={free.length === 0}>
+              <button type="button" className="shelf-new" onClick={() => setMaking(true)} >
                 <span aria-hidden="true">＋</span>
-                {free.length === 0 ? '만들 수 있는 해가 없어요' : '새 일기장 만들기'}
+                새 일기장 만들기
               </button>
             </div>
           )}
@@ -88,9 +97,9 @@ export default function Library() {
           <form className="paper-card lib-form" onSubmit={(e) => { e.preventDefault(); make(); }}>
             <h3>새 일기장</h3>
             <label className="lib-field">
-              <span>어느 해?</span>
+              <span>연도</span>
               <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
-                {free.map((y) => <option key={y} value={y}>{y}년</option>)}
+                {years.map((y) => <option key={y} value={y}>{y}년</option>)}
               </select>
             </label>
             <label className="lib-field">

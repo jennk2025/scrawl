@@ -1,5 +1,5 @@
 import { startOfMonth } from 'date-fns';
-import type { Book, DayEntry, ISODate } from '../types';
+import type { Book, BookData, DayEntry, ISODate, PlannerData } from '../types';
 
 export const DEFAULT_TITLE = 'my planner';
 
@@ -18,7 +18,7 @@ export function recordedDays(days: Record<ISODate, DayEntry>, year: number): num
 const hasRecord = (e: DayEntry) =>
   !!(e.main.trim() || (e.diary ?? '').trim() || e.memo.trim() || e.mood || e.tasks.length);
 
-/** 새 책 id: 같은 연도는 한 권만 만든다 */
+/** 처음 만든 책 id (연도 기준). 새로 만드는 책은 겹치지 않게 임의 id를 쓴다 */
 export const bookId = (year: number) => `book-${year}`;
 
 /**
@@ -34,4 +34,32 @@ export function booksFromLegacy(days: Record<ISODate, DayEntry>, title?: string,
   return [...years]
     .sort((a, b) => a - b)
     .map((year) => ({ id: bookId(year), year, title: title || DEFAULT_TITLE, cover: cover || 'navy' }));
+}
+
+export const bookDataOf = (s: BookData): BookData => ({
+  days: s.days,
+  exams: s.exams,
+  categories: s.categories,
+  habits: s.habits,
+  inbox: s.inbox,
+});
+
+/**
+ * 책마다 기록이 따로 없던 예전 데이터를 책별로 나눈다.
+ * 펼친 책은 지금 기록을 통째로 그대로 두고(data 없음), 다른 책은 자기 연도의 날짜 기록과 시험만 가져간다.
+ * 분류·습관은 복사본을 갖고, 메모함은 펼친 책이 가진다.
+ */
+export function splitLegacyBooks(d: BookData & Pick<PlannerData, 'books' | 'activeBookId'>): Book[] {
+  return d.books.map((b) => {
+    if (b.id === d.activeBookId) return { ...b, data: undefined };
+    const mine = (date: string) => date.startsWith(`${b.year}-`);
+    const data: BookData = {
+      days: Object.fromEntries(Object.entries(d.days).filter(([date]) => mine(date))),
+      exams: d.exams.filter((x) => mine(x.date)),
+      categories: d.categories.map((c) => ({ ...c })),
+      habits: d.habits.map((h) => ({ ...h })),
+      inbox: [],
+    };
+    return { ...b, data };
+  });
 }

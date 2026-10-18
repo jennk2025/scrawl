@@ -1,6 +1,6 @@
 import { createJSONStorage, type StateStorage } from 'zustand/middleware';
 import type { Book, PlannerData } from '../types';
-import { booksFromLegacy } from '../lib/books';
+import { booksFromLegacy, splitLegacyBooks } from '../lib/books';
 
 /**
  * 저장소 레이어. 지금은 브라우저 localStorage에 저장한다.
@@ -42,7 +42,7 @@ export function parseBackup(text: string): PlannerData {
   const data = parsed?.data ?? parsed;
   if (!data || typeof data.days !== 'object' || !Array.isArray(data.exams) || !Array.isArray(data.categories))
     throw new Error('플래너 백업 파일이 아니에요.');
-  return {
+  const out: PlannerData = {
     days: data.days,
     exams: data.exams,
     categories: data.categories,
@@ -52,6 +52,9 @@ export function parseBackup(text: string): PlannerData {
     carryMode: data.carryMode === 'manual' ? 'manual' : 'auto',
     ...readBooks(data),
   };
+  // 책마다 따로 기록하기 전의 백업이면 책별로 나눈다
+  if (out.books.every((b) => !b.data)) out.books = splitLegacyBooks(out);
+  return out;
 }
 
 /** 책장 읽기. 예전 백업(책장 없음)은 제목·표지를 이어받아 연도별로 책을 만든다. */

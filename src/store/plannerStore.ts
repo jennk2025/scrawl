@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Book, CarryMode, Category, DayEntry, Exam, Habit, ISODate, PlannerData, Task, Theme } from '../types';
+import type { Book, BookData, CarryMode, Category, DayEntry, Exam, Habit, ISODate, PlannerData, Task, Theme } from '../types';
 import { carryOver } from '../lib/carryOver';
 import { emptyDay, newId } from '../lib/day';
 import { todayISO } from '../lib/dates';
-import { bookId, booksFromLegacy } from '../lib/books';
+import { bookDataOf, bookId, booksFromLegacy, splitLegacyBooks } from '../lib/books';
 import { doneUnits, examTaskTitle, planExam, rangeUnits } from '../lib/examPlanner';
 import { STORAGE_KEY, plannerStorage } from './storage';
 
@@ -38,7 +38,8 @@ function mergeSubjects(data: PlannerData) {
   for (const x of data.exams ?? []) x.categoryId = remap(x.categoryId);
 }
 
-const initialData = (): PlannerData => ({
+/** 새 일기장이 처음 갖는 비어 있는 기록 */
+const freshBookData = (): BookData => ({
   days: {},
   exams: [],
   categories: [
@@ -54,6 +55,10 @@ const initialData = (): PlannerData => ({
     { id: 'h-move', name: '운동', color: HIGHLIGHTS[2] },
   ],
   inbox: [],
+});
+
+const initialData = (): PlannerData => ({
+  ...freshBookData(),
   theme: 'system',
   carryMode: 'auto',
   books: [{ id: bookId(new Date().getFullYear()), year: new Date().getFullYear(), title: 'my planner', cover: 'navy' }],
@@ -91,10 +96,10 @@ interface Actions {
   runCarryOver: () => number;
   setTheme: (t: Theme) => void;
   setCarryMode: (m: CarryMode) => void;
-  /** 새 책(연도 일기장)을 만들고 id를 돌려준다. 그 해 책이 이미 있으면 그 책을 돌려준다. */
+  /** 새 일기장을 책장에 꽂고 id를 돌려준다. 기록은 다른 일기장과 따로 비어 있는 채로 시작한다. */
   addBook: (year: number, title: string, cover: string) => string;
   updateBook: (id: string, patch: Partial<Pick<Book, 'title' | 'cover'>>) => void;
-  /** 책장에서만 뺀다. 날짜별 기록은 지우지 않는다 (같은 해 책을 다시 만들면 돌아온다) */
+  /** 일기장을 기록째 지운다 (마지막 한 권은 지울 수 없다) */
   removeBook: (id: string) => void;
   setActiveBook: (id: string) => void;
   importData: (data: PlannerData) => void;
@@ -136,6 +141,17 @@ function stripOpenExamTasks(days: Record<ISODate, DayEntry>, examId: string) {
       ? { ...e, tasks: e.tasks.filter((t) => t.examId !== examId || t.done) }
       : e;
   return next;
+}
+
+/** 책을 펼친다: 그 책의 기록을 맨 위로 꺼낸다 (처음 펼치는 책은 빈 기록) */
+function openBook(books: Book[], id: string): Partial<PlannerData> {
+  const target = books.find((b) => b.id === id);
+  if (!target) return {};
+  return {
+    books: books.map((b) => (b.id === id ? { ...b, data: undefined } : b)),
+    activeBookId: id,
+    ...(target.data ?? freshBookData()),
+  };
 }
 
 export const usePlanner = create<PlannerState>()(
@@ -256,8 +272,7 @@ export const usePlanner = create<PlannerState>()(
       setTheme: (theme) => set({ theme }),
       setCarryMode: (carryMode) => set({ carryMode }),
       addBook: (year, title, cover) => {
-        const id = bookId(year);
-        if (get().books.some((b) => b.id === id)) return id;
+        const id = `book-${newId()}`;
         set((s) => ({ books: [...s.books, { id, year, title, cover }].sort((a, b) => a.year - b.year) }));
         return id;
       },
@@ -266,16 +281,24 @@ export const usePlanner = create<PlannerState>()(
         set((s) => {
           if (s.books.length <= 1) return {};
           const books = s.books.filter((b) => b.id !== id);
-          return { books, activeBookId: s.activeBookId === id ? books[0].id : s.activeBookId };
+          if (s.activeBookId !== id) return { books };
+          return openBook(books, books[0].id);
         }),
-      setActiveBook: (activeBookId) => set({ activeBookId }),
-      importData: (data) => set(data),
+      setActiveBook: (id) =>
+        set((s) => {
+          if (id === s.activeBookId || !s.books.some((b) => b.id === id)) return {};
+          // 펼쳐 둔 책의 기록을 그 책에 넣어 두고, 새로 펼칠 책의 기록을 꺼낸다
+          const stowed = s.books.map((b) => (b.id === s.activeBookId ? { ...b, data: bookDataOf(s) } : b));
+          return openBook(stowed, id);
+        }),
+      importData: (data) =>
+        set({ ...data, books: data.books.map((b) => (b.id === data.activeBookId ? { ...b, data: undefined } : b)) }),
     }),
     {
       name: STORAGE_KEY,
       storage: plannerStorage,
-      version: 5,
-      // 기록은 그대로 두고 분류만 정리한다 (v3: 과목 분류 합치기, v4: 분류마다 다른 색, v5: 연도별 책장)
+      version: 6,
+      // 기록은 그대로 두고 분류만 정리한다 (v3: 과목 분류 합치기, v4: 분류마다 다른 색, v5: 연도별 책장, v6: 책마다 따로 기록)
       migrate: (persisted, version) => {
         const data = persisted as PlannerData & { notebookTitle?: string; notebookCover?: string };
         if (!Array.isArray(data?.categories)) return data as PlannerState;
@@ -289,6 +312,7 @@ export const usePlanner = create<PlannerState>()(
           data.activeBookId = (data.books.find((b) => b.year === y) ?? data.books[0]).id;
         }
         if (version < 3) mergeSubjects(data);
+        if (version < 6) data.books = splitLegacyBooks(data);
         const all = data.categories.map((c) => c.color);
         const used: string[] = [];
         data.categories = data.categories.map((c) => {
@@ -298,12 +322,14 @@ export const usePlanner = create<PlannerState>()(
         });
         return data as PlannerState;
       },
-      partialize: pickData,
+      // 펼친 책의 기록은 맨 위에 있으니 책 안에 또 저장하지 않는다
+      partialize: (s) => pickData(s, false),
     },
   ),
 );
 
-export function pickData(s: PlannerState): PlannerData {
+/** 저장·백업할 데이터. 백업(withActive)에는 펼친 책의 기록도 책 안에 같이 담는다 */
+export function pickData(s: PlannerState, withActive = true): PlannerData {
   return {
     days: s.days,
     exams: s.exams,
@@ -312,7 +338,7 @@ export function pickData(s: PlannerState): PlannerData {
     inbox: s.inbox,
     theme: s.theme,
     carryMode: s.carryMode,
-    books: s.books,
+    books: withActive ? s.books.map((b) => (b.id === s.activeBookId ? { ...b, data: bookDataOf(s) } : b)) : s.books,
     activeBookId: s.activeBookId,
   };
 }
