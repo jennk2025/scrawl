@@ -59,7 +59,7 @@ export default function Library() {
                   <span className="nb-spine" aria-hidden="true" />
                   <span className="nb-elastic" aria-hidden="true" />
                   <button type="button" className="shelf-open" onClick={() => open(b.id)} aria-label={`${b.year} ${b.title} 열기`} />
-                  <span className="nb-label">
+                  <label className="nb-label">
                     <span>{b.year}</span>
                     <input
                       className="shelf-title"
@@ -71,7 +71,7 @@ export default function Library() {
                       onBlur={(e) => !e.target.value.trim() && updateBook(b.id, { title: DEFAULT_TITLE })}
                       onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                     />
-                  </span>
+                  </label>
                 </span>
               </div>
               <p className="lib-meta">{recordedDays(b.id === activeBookId ? days : b.data?.days ?? {}, b.year)}일 기록</p>
