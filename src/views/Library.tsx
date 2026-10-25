@@ -46,8 +46,7 @@ function ShelfTitle({ value, onChange }: { value: string; onChange: (v: string) 
       maxLength={24}
       placeholder={DEFAULT_TITLE}
       aria-label="일기장 제목 고치기"
-      onChange={(e) => onChange(e.target.value.replace(/
-/g, ' '))}
+      onChange={(e) => onChange(e.target.value.replace(/\n/g, ' '))}
       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), e.currentTarget.blur())}
     />
   );
