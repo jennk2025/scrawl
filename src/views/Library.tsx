@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlanner } from '../store/plannerStore';
 import { COVERS, coverById } from '../lib/covers';
@@ -17,12 +17,41 @@ const titleSize = (t: string) => {
   return n <= 8 ? '1.35rem' : n <= 12 ? '1.15rem' : n <= 18 ? '1rem' : '0.85rem';
 };
 
-/** 제목이 길어도 다 보이게 글자 수만큼 칸을 늘린다 */
-const fit = (el: HTMLTextAreaElement | null) => {
-  if (!el) return;
-  el.style.height = 'auto';
-  el.style.height = `${el.scrollHeight}px`;
-};
+/** 제목 칸: 제목이 바뀔 때마다, 글꼴이 다 불러와진 뒤에도 글자 수에 맞게 칸 높이를 다시 맞춘다 */
+function ShelfTitle({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const fit = () => {
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    };
+    fit();
+    let alive = true;
+    document.fonts?.ready.then(() => alive && fit());
+    window.addEventListener('resize', fit);
+    return () => {
+      alive = false;
+      window.removeEventListener('resize', fit);
+    };
+  }, [value]);
+  return (
+    <textarea
+      className="shelf-title"
+      rows={1}
+      ref={ref}
+      style={{ fontSize: titleSize(value) }}
+      value={value}
+      maxLength={24}
+      placeholder={DEFAULT_TITLE}
+      aria-label="일기장 제목 고치기"
+      onChange={(e) => onChange(e.target.value.replace(/
+/g, ' '))}
+      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), e.currentTarget.blur())}
+    />
+  );
+}
 
 /** 첫 화면: 연도별 일기장이 꽂힌 책장. 책을 누르면 그 일기장으로 들어가고, 새 해 일기장을 만들 수 있다. */
 export default function Library() {
@@ -74,18 +103,7 @@ export default function Library() {
                   <button type="button" className="shelf-open" onClick={() => open(b.id)} aria-label={`${b.year} ${b.title} 열기`} />
                   <label className="nb-label">
                     <span>{b.year}</span>
-                    <textarea
-                      className="shelf-title"
-                      rows={1}
-                      ref={fit}
-                      style={{ fontSize: titleSize(b.title) }}
-                      value={b.title}
-                      maxLength={24}
-                      placeholder={DEFAULT_TITLE}
-                      aria-label="일기장 제목 고치기"
-                      onChange={(e) => updateBook(b.id, { title: e.target.value.replace(/\n/g, ' ') })}
-                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), e.currentTarget.blur())}
-                    />
+                    <ShelfTitle value={b.title} onChange={(title) => updateBook(b.id, { title })} />
                   </label>
                 </span>
               </div>
